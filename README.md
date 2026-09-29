@@ -2,6 +2,7 @@
 
 > Kalvium Sprint 2 · Team project (3 members)
 >
+> **Live demo:** https://noc-copilot.onrender.com (free plan; the first load after it has been idle takes ~1 minute)  
 > **New to the project? Start with [docs/OVERVIEW.md](docs/OVERVIEW.md).**
 
 **Problem.** A telecom operator maintains network configuration guides, troubleshooting runbooks

@@ -34,5 +34,5 @@
 1. Add more real-world-style runbooks (fibre cut, power outage, microwave link fade).
 2. Tune `RELEVANCE_THRESHOLD` using `scripts/evaluate.py` results.
 3. Add a feedback button (👍/👎) per answer and log it.
-4. Deploy to Render (see `render.yaml`).
+4. ~~Deploy to Render~~ done: https://noc-copilot.onrender.com
 5. Add a PDF vendor manual to the sample corpus.

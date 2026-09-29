@@ -3,7 +3,8 @@
 Start here. This page covers what we are building, how it works, how to run it, and what is
 left before the **30 Sep 2026 (morning)** deadline. Details are in the linked docs.
 
-Repo: https://github.com/Naman1369/telecom-runbook-rag
+Repo: https://github.com/Naman1369/telecom-runbook-rag  
+Live app: https://noc-copilot.onrender.com
 
 ---
 
@@ -51,7 +52,7 @@ sees the wrong release's docs.
 | Web UI (query box, answer view, source panel) | ✅ Done |
 | Tests: 27 offline tests | ✅ All passing |
 | Evaluation: 21 golden questions | ✅ 21/21, see below |
-| Deployment (Render) | ⏳ **To do**: `render.yaml` is ready |
+| Deployment (Render, free plan) | ✅ Live at https://noc-copilot.onrender.com |
 | Demo rehearsal | ⏳ **To do** |
 
 **Evaluation results** (full details in [EVALUATION.md](EVALUATION.md)):
@@ -208,7 +209,7 @@ are in [TEAM_WORKFLOW.md](TEAM_WORKFLOW.md).
 | # | Task | Owner | Notes |
 | --- | --- | --- | --- |
 | 1 | Accept the GitHub collaborator invite, clone, run locally | Shubham, Akash | Section 5 |
-| 2 | Deploy to Render | Akash | New → Blueprint → select repo; set `GEMINI_API_KEY` in the Render dashboard |
+| 2 | ~~Deploy to Render~~ ✅ done | Naman | Every push to `main` redeploys automatically; the key lives only in the Render dashboard |
 | 3 | Add 1–2 more runbooks (e.g. fibre cut, power outage) + golden questions | Naman | Re-run `ingest.py` and `evaluate.py` |
 | 4 | Re-run the evaluation after any change and update EVALUATION.md | Shubham | |
 | 5 | Rehearse the demo (section 9) and split who presents what | Everyone | |
@@ -232,6 +233,9 @@ are in [TEAM_WORKFLOW.md](TEAM_WORKFLOW.md).
 6. **Metrics** (30 s): show the evaluation table from section 2.
 
 All example questions are also in the **"Try"** list in the app's left panel.
+
+Demo from the live app: https://noc-copilot.onrender.com. The free plan sleeps after 15 minutes without traffic, and the first
+request then takes about a minute. **Open it 2–3 minutes before presenting.**
 
 ---
 
