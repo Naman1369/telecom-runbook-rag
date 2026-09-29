@@ -203,7 +203,7 @@ class RAGPipeline:
         # 6. attach citations — keep only labels that point at excerpts we actually supplied
         result = self._cite(base, parsed, used)
         result["usage"] = {"input_tokens": usage.input_tokens, "output_tokens": usage.output_tokens,
-                           "cost_usd": round(usage.cost_usd, 6), "model": self.llm.model}
+                           "cost_usd": round(usage.cost_usd, 6), "model": usage.model or self.llm.model}
         return self._finish(result, t0, t_embed, t_retrieve, t_generate)
 
     # -----------------------------------------------------------------------------------------

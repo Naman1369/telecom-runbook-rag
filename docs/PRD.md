@@ -90,7 +90,7 @@ authentication/SSO, write access to network elements.
 
 ## 7. Non-functional requirements
 
-- Median latency < 3 s (Flash model, thinking disabled, top-k 5, ~6k-token context cap).
+- Median latency < 3 s (Flash-Lite model with fallback, top-k 5, ~6k-token context cap).
 - API keys only in `.env`, never committed.
 - Cost visibility: token and USD estimates per query and per ingestion run.
 

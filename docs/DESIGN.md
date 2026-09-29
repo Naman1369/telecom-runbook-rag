@@ -10,7 +10,7 @@
 | 3.13 Prompt construction | `app/prompts/system.md`: role, release scope, six grounding rules |
 | 3.14 Tokens & cost | `app/tokens.py`, `usage` in every API response, ingest report cost |
 | 3.15 Context window management | `build_context` (token budget), `build_history` (recent turns verbatim, older turns summarised) |
-| 3.16 Model parameters | temperature 0.1, `max_output_tokens` 1024, thinking budget 0, all set in `.env` |
+| 3.16 Model parameters | temperature 0.1, `max_output_tokens` 1024, optional `THINKING_LEVEL`, model fallback chain, all set in `.env` |
 | 3.17 Structured output | `LLMAnswer` Pydantic schema passed as `response_schema`; re-validated on fallback |
 | 3.18 Prompt templates | `.md` templates rendered with `string.Template` |
 | 3.19 Multi-format intake | `app/ingest/loaders.py` (md, html, txt, pdf) |
@@ -55,5 +55,26 @@ from the requested release. We still re-check citation versions in the evaluatio
 ## Latency budget (< 3 s median)
 
 The query embedding takes about 0.2–0.4 s, Chroma retrieval takes under 20 ms, and generation
-on Flash with thinking disabled takes about 1–2 s. Retrieval context is capped at about 6k
+on `gemini-3.5-flash-lite` takes about 1–2 s (measured median end-to-end: 1.3 s). Retrieval context is capped at about 6k
 tokens.
+
+## Model choice (tested 29 Sep 2026)
+
+`gemini-2.5-flash` is closed to new API keys. During testing, the full Flash models
+(`gemini-3.8-flash`, `3.7-flash`, `flash-latest`) returned 503 "high demand" errors, and
+`gemini-3.5-flash` took about 20 s because of default thinking. `gemini-3.5-flash-lite` answered in
+under 1 s with valid structured JSON and passed every evaluation question, so it is the default.
+`GeminiChat` falls back through `CHAT_FALLBACK_MODELS` when a model is overloaded or rate-limited.
+
+## Relevance threshold calibration
+
+Gemini embeddings give even unrelated telecom text a cosine similarity of about 0.7. The top-1
+retrieval score for each golden question showed:
+
+| Question type | Top-1 score range |
+| --- | --- |
+| Answerable (17) | 0.687 – 0.797 |
+| Out of scope (segment routing, battery, generator, MPLS VPN, weather, Cisco VLAN) | 0.474 – 0.620 |
+
+`RELEVANCE_THRESHOLD=0.65` sits in the gap. Questions just above it are still handled by the model's
+own `answer_found: false`, e.g. the 22.3 VSWR-test trap question.

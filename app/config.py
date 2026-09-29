@@ -57,12 +57,12 @@ class Settings:
 def get_settings() -> Settings:
     return Settings(
         gemini_api_key=_env("GEMINI_API_KEY", ""),
-        chat_model=_env("CHAT_MODEL", "gemini-2.5-flash"),
+        chat_model=_env("CHAT_MODEL", "gemini-3.5-flash-lite"),
         embed_model=_env("EMBED_MODEL", "gemini-embedding-001"),
         embed_dim=int(_env("EMBED_DIM", "768")),
         embed_provider=_env("EMBED_PROVIDER", "gemini").lower(),
         top_k=int(_env("TOP_K", "5")),
-        relevance_threshold=float(_env("RELEVANCE_THRESHOLD", "0.55")),
+        relevance_threshold=float(_env("RELEVANCE_THRESHOLD", "0.65")),
         chunk_tokens=int(_env("CHUNK_TOKENS", "350")),
         chunk_overlap_tokens=int(_env("CHUNK_OVERLAP_TOKENS", "50")),
         temperature=float(_env("TEMPERATURE", "0.1")),

@@ -9,10 +9,12 @@ to keep chunks and prompts inside safe limits; billing-accurate counts come from
 from __future__ import annotations
 
 import math
+import os
 
 CHARS_PER_TOKEN = 4
 
-# USD per 1M tokens. Update from https://ai.google.dev/pricing if prices change.
+# USD per 1M tokens — check https://ai.google.dev/pricing and fill in the model you use.
+# Models missing here report a cost of 0 (unknown), unless CHAT_PRICE_INPUT/OUTPUT_PER_M are set.
 PRICING_PER_MILLION = {
     "gemini-2.5-flash": {"input": 0.30, "output": 2.50},
     "gemini-2.5-flash-lite": {"input": 0.10, "output": 0.40},
@@ -26,6 +28,9 @@ def estimate_tokens(text: str) -> int:
 
 def estimate_cost(model: str, input_tokens: int, output_tokens: int = 0) -> float:
     price = PRICING_PER_MILLION.get(model)
+    if price is None and os.getenv("CHAT_PRICE_INPUT_PER_M"):
+        price = {"input": float(os.getenv("CHAT_PRICE_INPUT_PER_M", "0")),
+                 "output": float(os.getenv("CHAT_PRICE_OUTPUT_PER_M", "0"))}
     if price is None:
         return 0.0
     return (input_tokens * price["input"] + output_tokens * price["output"]) / 1_000_000

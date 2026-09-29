@@ -37,7 +37,7 @@ the vector search**, so the model never sees another release's context.
 
 | Layer | Choice |
 | --- | --- |
-| LLM | Google Gemini `gemini-2.5-flash`: JSON-schema output, temperature 0.1, thinking disabled for latency |
+| LLM | Google Gemini `gemini-3.5-flash-lite` (falls back to `gemini-3.1-flash-lite` on 503/429): JSON-schema output, temperature 0.1 |
 | Embeddings | `gemini-embedding-001` at 768 dimensions, asymmetric `RETRIEVAL_DOCUMENT` / `RETRIEVAL_QUERY` task types |
 | Vector DB | ChromaDB (persistent), HNSW index with cosine distance, metadata filters on vendor/product/version/doc_type |
 | Backend | FastAPI (`/api/query`, `/api/catalog`, `/api/health`) |

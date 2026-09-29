@@ -25,6 +25,7 @@ class LLMUsage:
     input_tokens: int = 0
     output_tokens: int = 0
     cost_usd: float = 0.0
+    model: str = ""
 
 
 class LLMError(RuntimeError):
@@ -38,7 +39,10 @@ class ChatModel(Protocol):
 
 
 class GeminiChat:
-    def __init__(self, settings: Settings | None = None, max_retries: int = 2):
+    """Primary model with ordered fallbacks: overloaded (503) or rate-limited (429) models are
+    retried briefly, then the next model in ``CHAT_FALLBACK_MODELS`` is tried."""
+
+    def __init__(self, settings: Settings | None = None, max_retries: int = 1):
         from google import genai
 
         self.settings = settings or get_settings()
@@ -46,9 +50,11 @@ class GeminiChat:
             raise LLMError("GEMINI_API_KEY is not set — copy .env.example to .env and add your key.")
         self.client = genai.Client(api_key=self.settings.gemini_api_key)
         self.model = self.settings.chat_model
+        fallbacks = [m.strip() for m in os.getenv("CHAT_FALLBACK_MODELS", "gemini-3.1-flash-lite").split(",")]
+        self.models = [self.model] + [m for m in fallbacks if m and m != self.model]
         self.max_retries = max_retries
-        # 0 disables "thinking" on 2.5 Flash models, which keeps median latency under the 3 s target.
-        self.thinking_budget = int(os.getenv("THINKING_BUDGET", "0"))
+        # Optional: Gemini 3.x takes a thinking *level* ("low", "high"); leave unset to use the model default.
+        self.thinking_level = os.getenv("THINKING_LEVEL", "").strip()
 
     def _config(self, system: str, schema: type[BaseModel]):
         from google.genai import types
@@ -59,34 +65,52 @@ class GeminiChat:
             max_output_tokens=self.settings.max_output_tokens,
             response_mime_type="application/json",
             response_schema=schema,
+            automatic_function_calling=types.AutomaticFunctionCallingConfig(disable=True),
         )
-        if self.thinking_budget >= 0:
-            kwargs["thinking_config"] = types.ThinkingConfig(thinking_budget=self.thinking_budget)
+        if self.thinking_level:
+            kwargs["thinking_config"] = types.ThinkingConfig(thinking_level=self.thinking_level)
         return types.GenerateContentConfig(**kwargs)
+
+    def _generate(self, model: str, prompt: str, config):
+        from google.genai import errors
+
+        delay = 1.0
+        for attempt in range(self.max_retries + 1):
+            try:
+                return self.client.models.generate_content(model=model, contents=prompt, config=config)
+            except errors.APIError as exc:
+                if exc.code not in RETRYABLE_STATUS or attempt == self.max_retries:
+                    raise
+                log.warning("%s returned %s — retry %d in %.0fs", model, exc.code, attempt + 1, delay)
+                time.sleep(delay)
+                delay *= 2
+        raise RuntimeError("unreachable")
 
     def generate_json(self, system: str, prompt: str, schema: type[T]) -> tuple[T, LLMUsage]:
         from google.genai import errors
 
         config = self._config(system, schema)
-        delay = 1.0
-        for attempt in range(self.max_retries + 1):
+        response, used_model, last_error = None, None, None
+        for model in self.models:
             try:
-                response = self.client.models.generate_content(model=self.model, contents=prompt, config=config)
+                response, used_model = self._generate(model, prompt, config), model
                 break
             except errors.APIError as exc:
-                if exc.code not in RETRYABLE_STATUS or attempt == self.max_retries:
-                    raise LLMError(f"Gemini API error {exc.code}: {exc.message}") from exc
-                log.warning("Chat API %s — retry %d in %.0fs", exc.code, attempt + 1, delay)
-                time.sleep(delay)
-                delay *= 2
+                last_error = exc
+                if exc.code not in RETRYABLE_STATUS:
+                    break
+                log.warning("%s unavailable (%s) — falling back", model, exc.code)
+        if response is None:
+            raise LLMError(f"Gemini API error {last_error.code}: {last_error.message}") from last_error
 
         meta = response.usage_metadata
         usage = LLMUsage(
             input_tokens=getattr(meta, "prompt_token_count", 0) or 0,
             output_tokens=(getattr(meta, "candidates_token_count", 0) or 0)
             + (getattr(meta, "thoughts_token_count", 0) or 0),
+            model=used_model,
         )
-        usage.cost_usd = estimate_cost(self.model, usage.input_tokens, usage.output_tokens)
+        usage.cost_usd = estimate_cost(used_model, usage.input_tokens, usage.output_tokens)
 
         parsed = response.parsed
         if isinstance(parsed, schema):
