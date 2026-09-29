@@ -24,9 +24,9 @@
 
 | Member | Ownership | Roadmap items |
 | --- | --- | --- |
-| Member A | Ingestion: loaders, cleaning, chunking, corpus validation, adding more docs | 3.3, 3.19 – 3.24 |
-| Member B | Embeddings, vector store, retrieval tuning (threshold, top-k), evaluation | 3.4, 3.5, 3.25 – 3.32 |
-| Member C | LLM layer, prompts, RAG pipeline, API, web UI, deployment | 3.12 – 3.18, 3.6, 3.7 |
+| Naman Binu | Ingestion: loaders, cleaning, chunking, corpus validation, adding more docs | 3.3, 3.19 – 3.24 |
+| Shubham Padkonde | Embeddings, vector store, retrieval tuning (threshold, top-k), evaluation | 3.4, 3.5, 3.25 – 3.32 |
+| Akash Kolhe | LLM layer, prompts, RAG pipeline, API, web UI, deployment | 3.12 – 3.18, 3.6, 3.7 |
 | Everyone | PRD, mock UX, README, demo | 3.1, 3.8, 3.9, 3.11 |
 
 ## Suggested issues to open
