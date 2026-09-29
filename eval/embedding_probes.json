@@ -1,0 +1,27 @@
+[
+  {
+    "anchor": "BGP neighbor keeps going down, hold timer expired",
+    "related": "BGP session flapping: check the last reset reason and perform a soft reset of the peer",
+    "unrelated": "High VSWR on the radio unit: inspect the jumper and connector on the antenna branch"
+  },
+  {
+    "anchor": "5G cell has lost timing synchronisation",
+    "related": "PTP / GNSS sync loss: the baseband enters holdover, check satellites and the grandmaster",
+    "unrelated": "Configure QoS policy map to prioritise voice traffic with DSCP EF"
+  },
+  {
+    "anchor": "CRC errors increasing on uplink interface",
+    "related": "Interface input errors: check optical receive power and clean the fibre connectors",
+    "unrelated": "Upgrade the gNodeB software package and activate the new release"
+  },
+  {
+    "anchor": "UEs cannot register, NG link to AMF is down",
+    "related": "NG-C SCTP association to the AMF is not established; ping the N2 address",
+    "unrelated": "Line card temperature critical: check the fan tray and site HVAC"
+  },
+  {
+    "anchor": "How do I roll back a bad configuration change?",
+    "related": "Undo a committed change with rollback 1 followed by commit; commit confirmed rolls back automatically",
+    "unrelated": "Radio unit VSWR test mutes the branch under test for 20 seconds"
+  }
+]

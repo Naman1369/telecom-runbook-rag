@@ -1,0 +1,49 @@
+---
+title: HX-5G gNodeB Operations Manual
+doc_type: vendor_manual
+url: https://support.helix-radio.example/hx5g/22.3/operations-manual
+---
+
+HX-5G gNodeB Operations Manual - Software 22.3
+
+1. Accessing the node
+
+Connect to the baseband over SSH from the OSS jump host and start the CLI with hxcli.
+Read-only users can run show commands. Write commands require the ops-admin role.
+
+2. Cell administration
+
+Lock a cell (stops traffic gracefully, UEs are handed over to neighbours):
+    hxcli cell lock --cell-id <id>
+Unlock a cell:
+    hxcli cell unlock --cell-id <id>
+Show a cell:
+    hxcli cell show --cell-id <id>
+Change output power (dBm):
+    hxcli cell set --cell-id <id> --power <dBm>
+
+3. Node restarts
+
+Warm restart (software only, about 4 minutes of outage):
+    hxcli node restart --warm
+Cold restart (hardware reset, about 9 minutes of outage):
+    hxcli node restart --cold
+Always prefer a warm restart. A cold restart is only required after a baseband board swap.
+
+4. Synchronisation
+
+Release 22.3 supports GNSS and PTP (G.8275.1) as sync sources. Holdover is limited to 4 hours
+because the baseband uses a TCXO oscillator. Show commands:
+    hxcli ptp show
+    hxcli gnss show
+
+5. Software upgrade
+
+Upgrades are delivered as signed packages. Load with hxcli sw download <url>, activate with
+hxcli sw activate <version>. Activation restarts the node. Upgrade from 22.3 to 23.1 requires
+22.3.4 or later.
+
+6. Log collection for Helix TAC
+
+    hxcli support collect --last 2h
+The bundle is written to /var/support and must be attached to the TAC case.

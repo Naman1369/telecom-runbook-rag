@@ -1,0 +1,14 @@
+# Render Blueprint — one web service. Set GEMINI_API_KEY in the Render dashboard (never in git).
+services:
+  - type: web
+    name: noc-copilot
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt && python scripts/ingest.py --skip-quality
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /api/health
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12.7"
+      - key: GEMINI_API_KEY
+        sync: false

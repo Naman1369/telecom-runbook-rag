@@ -1,0 +1,100 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 380" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="13">
+  <rect width="960" height="380" fill="#ffffff"/>
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#5d6b7c"/>
+    </marker>
+    <style>
+      .box { fill: #f4f6f9; stroke: #b8c3cf; rx: 8; }
+      .hl { fill: #e5f0fb; stroke: #0b6bcb; }
+      .t { fill: #16202c; font-weight: 600; }
+      .s { fill: #5d6b7c; font-size: 11px; }
+      .lane { fill: #0b6bcb; font-weight: 700; font-size: 12px; letter-spacing: .08em; }
+      .ln { stroke: #5d6b7c; stroke-width: 1.5; fill: none; marker-end: url(#arr); }
+    </style>
+  </defs>
+
+  <text x="24" y="34" class="lane">INGESTION PLANE · OFFLINE (scripts/ingest.py)</text>
+  <g>
+    <rect class="box" x="24" y="50" width="130" height="64"/>
+    <text x="36" y="76" class="t">Doc sources</text>
+    <text x="36" y="94" class="s">runbooks · config</text>
+    <text x="36" y="107" class="s">manuals · release notes</text>
+
+    <rect class="box" x="178" y="50" width="130" height="64"/>
+    <text x="190" y="76" class="t">Parse &amp; clean</text>
+    <text x="190" y="94" class="s">md · html · txt · pdf</text>
+    <text x="190" y="107" class="s">strip boilerplate</text>
+
+    <rect class="box" x="332" y="50" width="140" height="64"/>
+    <text x="344" y="76" class="t">Chunk + tag</text>
+    <text x="344" y="94" class="s">section-aware, 350 tok</text>
+    <text x="344" y="107" class="s">vendor·product·version</text>
+
+    <rect class="box" x="496" y="50" width="120" height="64"/>
+    <text x="508" y="76" class="t">Validate</text>
+    <text x="508" y="94" class="s">metadata schema</text>
+    <text x="508" y="107" class="s">quality probes</text>
+
+    <rect class="box" x="640" y="50" width="120" height="64"/>
+    <text x="652" y="76" class="t">Embed</text>
+    <text x="652" y="94" class="s">gemini-embedding</text>
+    <text x="652" y="107" class="s">batch · retry · cache</text>
+
+    <rect class="box hl" x="784" y="50" width="152" height="64"/>
+    <text x="796" y="76" class="t">Vector store</text>
+    <text x="796" y="94" class="s">Chroma · HNSW cosine</text>
+    <text x="796" y="107" class="s">metadata-filterable</text>
+
+    <path class="ln" d="M154 82 H176"/>
+    <path class="ln" d="M308 82 H330"/>
+    <path class="ln" d="M472 82 H494"/>
+    <path class="ln" d="M616 82 H638"/>
+    <path class="ln" d="M760 82 H782"/>
+  </g>
+
+  <text x="24" y="190" class="lane">QUERY PLANE · ONLINE (POST /api/query)</text>
+  <g>
+    <rect class="box" x="24" y="206" width="140" height="64"/>
+    <text x="36" y="232" class="t">Engineer query</text>
+    <text x="36" y="250" class="s">symptom / alarm</text>
+    <text x="36" y="263" class="s">+ product &amp; release</text>
+
+    <rect class="box" x="188" y="206" width="120" height="64"/>
+    <text x="200" y="232" class="t">Embed query</text>
+    <text x="200" y="250" class="s">same model</text>
+    <text x="200" y="263" class="s">RETRIEVAL_QUERY</text>
+
+    <rect class="box hl" x="332" y="206" width="150" height="64"/>
+    <text x="344" y="232" class="t">Filtered top-k</text>
+    <text x="344" y="250" class="s">where version = 8.1</text>
+    <text x="344" y="263" class="s">+ relevance threshold</text>
+
+    <rect class="box" x="506" y="206" width="140" height="64"/>
+    <text x="518" y="232" class="t">Grounded LLM</text>
+    <text x="518" y="250" class="s">gemini flash · JSON</text>
+    <text x="518" y="263" class="s">excerpts only</text>
+
+    <rect class="box" x="670" y="206" width="130" height="64"/>
+    <text x="682" y="232" class="t">Cite &amp; validate</text>
+    <text x="682" y="250" class="s">drop uncited steps</text>
+    <text x="682" y="263" class="s">section + lines</text>
+
+    <rect class="box" x="824" y="206" width="112" height="64"/>
+    <text x="836" y="232" class="t">Web app</text>
+    <text x="836" y="250" class="s">steps · commands</text>
+    <text x="836" y="263" class="s">source panel</text>
+
+    <path class="ln" d="M164 238 H186"/>
+    <path class="ln" d="M308 238 H330"/>
+    <path class="ln" d="M482 238 H504"/>
+    <path class="ln" d="M646 238 H668"/>
+    <path class="ln" d="M800 238 H822"/>
+    <path class="ln" d="M860 114 V150 H407 V204" stroke-dasharray="4 3"/>
+  </g>
+
+  <rect x="332" y="300" width="314" height="54" rx="8" fill="#fde8e7" stroke="#b3261e"/>
+  <text x="344" y="322" class="t">Fallback: nothing relevant for this release</text>
+  <text x="344" y="340" class="s">→ "No grounded answer found", LLM not called, escalate to TAC</text>
+  <path class="ln" d="M407 270 V298"/>
+</svg>

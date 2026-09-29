@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>NOC Copilot</title>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo" aria-hidden="true">◉</span>
+      <div>
+        <h1>NOC Copilot</h1>
+        <p>Version-aware answers from runbooks, config guides &amp; vendor manuals</p>
+      </div>
+    </div>
+    <div id="health" class="health" title="Service status">checking…</div>
+  </header>
+
+  <main class="layout">
+    <section class="panel ask" aria-label="Ask a question">
+      <form id="ask-form">
+        <label for="product">Equipment</label>
+        <select id="product" required></select>
+
+        <label>Software release</label>
+        <div id="versions" class="segmented" role="radiogroup" aria-label="Software release"></div>
+
+        <label>Search in</label>
+        <div id="doc-types" class="chips">
+          <label><input type="checkbox" value="runbook" checked> Runbooks</label>
+          <label><input type="checkbox" value="config_guide" checked> Config guides</label>
+          <label><input type="checkbox" value="vendor_manual" checked> Vendor manuals</label>
+          <label><input type="checkbox" value="release_notes" checked> Release notes</label>
+        </div>
+
+        <label for="question">Symptom, alarm or question</label>
+        <textarea id="question" rows="4" maxlength="2000" required
+          placeholder="e.g. BGP peer 10.0.0.2 is stuck in Idle after the fibre was repaired — how do I reset it?"></textarea>
+
+        <div class="actions">
+          <button type="submit" id="submit">Find resolution</button>
+          <button type="button" id="new-incident" class="ghost" hidden>New incident</button>
+        </div>
+        <p class="hint">Ctrl + Enter to submit. Follow-up questions keep the incident context.</p>
+      </form>
+
+      <div class="examples">
+        <h2>Try</h2>
+        <ul id="examples"></ul>
+      </div>
+    </section>
+
+    <section class="panel answer" aria-live="polite">
+      <div id="thread"></div>
+      <div id="empty" class="empty">
+        <p class="big">Pick the equipment and release, then describe the outage.</p>
+        <p>Answers come only from the documentation for that exact release, and every step links to its source section.</p>
+      </div>
+    </section>
+
+    <aside class="panel sources" aria-label="Sources">
+      <h2>Sources</h2>
+      <div id="sources"><p class="muted">Cited sections appear here.</p></div>
+    </aside>
+  </main>
+
+  <template id="tpl-turn">
+    <article class="turn">
+      <div class="q"></div>
+      <div class="a">
+        <div class="meta"></div>
+        <p class="summary"></p>
+        <ol class="steps"></ol>
+        <ul class="warnings"></ul>
+      </div>
+    </article>
+  </template>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

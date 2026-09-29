@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>AX-9000 Alarm Reference Manual</title>
+  <meta name="doc_type" content="vendor_manual">
+  <meta name="url" content="https://docs.aurora-networks.example/ax9000/7.4/alarms">
+</head>
+<body>
+  <nav>Home | Products | AX-9000 | Documentation | Support portal</nav>
+  <header><p>Aurora Networks Documentation Portal — Cookie settings — Sign in</p></header>
+
+  <main>
+    <h1>AX-9000 Alarm Reference — AuroraOS 7.4</h1>
+    <p>This manual lists every alarm raised by AuroraOS 7.4, its severity and the runbook to use.</p>
+
+    <h2>AX-ALM-1201 RP CPU above 90%</h2>
+    <p>Severity: Major. Raised when route processor CPU stays above 90% for 60 seconds.
+       Cleared when CPU falls below 75%. Runbook: RB-103.</p>
+
+    <h2>AX-ALM-2031 Line card temperature critical</h2>
+    <p>Severity: Critical. Raised when a line card inlet sensor reads 85 °C or higher.
+       The card powers off automatically at 95 °C. Runbook: RB-105.</p>
+
+    <h2>AX-ALM-3007 Interface error threshold crossed</h2>
+    <p>Severity: Minor. Raised when CRC or input errors exceed 100 per minute on any interface.
+       Runbook: RB-102.</p>
+
+    <h2>AX-ALM-4102 BGP peer down</h2>
+    <p>Severity: Major. Raised when a configured BGP neighbor leaves the Established state.
+       Runbook: RB-101.</p>
+
+    <h2>AX-ALM-5001 Power supply failure</h2>
+    <p>Severity: Critical. Raised when a PSU reports output failure. The AX-9000 runs on N+1
+       power; replace the failed PSU within 24 hours. Check with <code>show environment power</code>.</p>
+  </main>
+
+  <footer>© Aurora Networks (fictional). Privacy | Terms | Contact</footer>
+</body>
+</html>
