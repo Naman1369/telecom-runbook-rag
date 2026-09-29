@@ -1,6 +1,8 @@
 # NOC Copilot — Version-Aware Telecom Runbook RAG
 
 > Kalvium Sprint 2 · Team project (3 members)
+>
+> **New to the project? Start with [docs/OVERVIEW.md](docs/OVERVIEW.md).**
 
 **Problem.** A telecom operator maintains network configuration guides, troubleshooting runbooks
 and vendor manuals, but support engineers cannot retrieve the precise resolution step during
