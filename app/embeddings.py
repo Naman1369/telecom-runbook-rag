@@ -138,6 +138,10 @@ class GeminiEmbedder:
             batch = todo[start:start + self.batch_size]
             batch_texts = [texts[i] for _, i in batch]
             vectors = self._call(batch_texts, task_type)
+            if len(vectors) != len(batch):
+                raise ValueError("Embedding response count does not match the requested batch.")
+            if any(len(v) != self.dim or not all(math.isfinite(x) for x in v) for v in vectors):
+                raise ValueError("Embedding response contains an invalid dimension or non-finite value.")
             tokens = sum(estimate_tokens(t) for t in batch_texts)
             self.stats.embedded += len(batch)
             self.stats.input_tokens += tokens
