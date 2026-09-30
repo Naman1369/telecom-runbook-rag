@@ -102,9 +102,10 @@ def catalog_path(settings: Settings | None = None) -> Path:
 
 
 def write_catalog(metadatas: list[dict], settings: Settings | None = None) -> dict:
-    products: dict[str, dict] = {}
+    products: dict[tuple[str, str], dict] = {}
     for m in metadatas:
-        p = products.setdefault(m["product"], {"vendor": m["vendor"], "product": m["product"], "versions": {}})
+        p = products.setdefault((m["vendor"], m["product"]),
+                                {"vendor": m["vendor"], "product": m["product"], "versions": {}})
         v = p["versions"].setdefault(m["version"], {"documents": set(), "chunks": 0})
         v["documents"].add(m["title"])
         v["chunks"] += 1
