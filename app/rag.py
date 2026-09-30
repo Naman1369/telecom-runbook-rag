@@ -19,7 +19,7 @@ from app.config import Settings, get_settings
 from app.embeddings import Embedder
 from app.llm import ChatModel, LLMError
 from app.prompts import render
-from app.tokens import estimate_tokens, trim_to_tokens
+from app.tokens import CHARS_PER_TOKEN, estimate_tokens, trim_to_tokens
 from app.vectorstore import RetrievedChunk, VectorStore, read_catalog
 
 HISTORY_TOKENS = 600
@@ -95,21 +95,23 @@ def label(i: int) -> str:
 
 
 def build_context(chunks: list[RetrievedChunk], max_tokens: int) -> tuple[str, list[RetrievedChunk]]:
-    parts, used, budget = [], [], max_tokens
+    parts, used, budget = [], [], max(0, max_tokens) * CHARS_PER_TOKEN
+    separator = "\n\n---\n\n"
     for i, chunk in enumerate(chunks):
         m = chunk.metadata
         header = f"[{label(i)}] {m['title']} ({m['product']} {m['version']}) — {m['section']} — lines {m['line_start']}-{m['line_end']}"
         block = f"{header}\n{chunk.text}"
-        cost = estimate_tokens(block)
-        if cost > budget:
-            if budget > 150:  # room for a meaningful partial excerpt
-                parts.append(trim_to_tokens(block, budget))
+        available = budget - (len(separator) if parts else 0)
+        cost = len(block)
+        if cost > available:
+            if available > 150 * CHARS_PER_TOKEN:  # room for a meaningful partial excerpt
+                parts.append(trim_to_tokens(block, available // CHARS_PER_TOKEN)[:available])
                 used.append(chunk)
             break
         parts.append(block)
         used.append(chunk)
-        budget -= cost
-    return "\n\n---\n\n".join(parts), used
+        budget = available - cost
+    return separator.join(parts), used
 
 
 def build_history(history: list[dict], max_tokens: int = HISTORY_TOKENS) -> str:
