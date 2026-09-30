@@ -186,6 +186,10 @@ def _collect(node: _Node, path: list[str], max_tokens: int, overlap: int,
 
 
 def chunk_document(doc: Document, max_tokens: int = 350, overlap_tokens: int = 50) -> list[Chunk]:
+    if max_tokens <= 0:
+        raise ValueError("max_tokens must be positive")
+    if overlap_tokens < 0 or overlap_tokens >= max_tokens:
+        raise ValueError("overlap_tokens must be non-negative and smaller than max_tokens")
     tree = _parse_tree(doc.text)
     raw: list[tuple[str, list[tuple[int, str]]]] = []
     _collect(tree, [], max_tokens, overlap_tokens, raw)
