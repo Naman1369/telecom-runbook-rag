@@ -131,4 +131,5 @@ def read_catalog(settings: Settings | None = None) -> dict:
 
 
 def _version_key(version: str) -> tuple:
-    return tuple(int(p) if p.isdigit() else p for p in version.replace("-", ".").split("."))
+    return tuple((0, int(p)) if p.isdigit() else (1, p)
+                 for p in version.replace("-", ".").split("."))
