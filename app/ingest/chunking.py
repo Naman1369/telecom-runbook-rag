@@ -76,7 +76,19 @@ class _Node:
 def _parse_tree(text: str) -> _Node:
     root = _Node(level=0, title="")
     stack = [root]
+    fence = None
     for line_no, line in enumerate(text.split("\n"), start=1):
+        marker = re.match(r"^ {0,3}(`{3,}|~{3,})(.*)$", line)
+        if fence is not None:
+            stack[-1].body.append((line_no, line))
+            if (marker and marker[1][0] == fence[0] and len(marker[1]) >= len(fence)
+                    and not marker[2].strip()):
+                fence = None
+            continue
+        if marker and (marker[1][0] != "`" or "`" not in marker[2]):
+            fence = marker[1]
+            stack[-1].body.append((line_no, line))
+            continue
         match = _HEADING.match(line)
         if match:
             level = len(match.group(1))
