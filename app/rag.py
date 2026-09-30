@@ -76,15 +76,22 @@ def detect_release(question: str, catalog: dict, product: str | None = None) -> 
 def resolve_release(req: QueryRequest, catalog: dict) -> tuple[str, str, str, bool]:
     detected = False
     product, version = req.product, req.version
+    if req.vendor:
+        catalog = {"products": [p for p in catalog.get("products", []) if p["vendor"] == req.vendor]}
     if not version:
         found = detect_release(req.question, catalog, product)
         if not found:
             raise QueryError("Select the product version — it could not be detected from the question.")
         product, version = found
         detected = True
-    for p in catalog.get("products", []):
-        if (product is None or p["product"] == product) and any(v["version"] == version for v in p["versions"]):
-            return p["vendor"], p["product"], version, detected
+    matches = [p for p in catalog.get("products", [])
+               if (product is None or p["product"] == product)
+               and any(v["version"] == version for v in p["versions"])]
+    if len(matches) > 1:
+        raise QueryError("Select a unique product and vendor for this version.")
+    if matches:
+        p = matches[0]
+        return p["vendor"], p["product"], version, detected
     raise QueryError(f"No documentation is indexed for {product or 'any product'} version {version}.")
 
 
