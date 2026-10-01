@@ -37,7 +37,19 @@ def clean_text(text: str) -> str:
     text = _CONTROL_CHARS.sub("", text)
 
     lines = []
+    fence = None
     for line in text.split("\n"):
+        marker = re.match(r"^ {0,3}(`{3,}|~{3,})(.*)$", line)
+        if fence is not None:
+            lines.append(line)
+            if (marker and marker[1][0] == fence[0] and len(marker[1]) >= len(fence)
+                    and not marker[2].strip()):
+                fence = None
+            continue
+        if marker and (marker[1][0] != "`" or "`" not in marker[2]):
+            fence = marker[1]
+            lines.append(line)
+            continue
         if is_boilerplate(line):
             lines.append("")
             continue

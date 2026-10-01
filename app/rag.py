@@ -19,7 +19,7 @@ from app.config import Settings, get_settings
 from app.embeddings import Embedder
 from app.llm import ChatModel, LLMError
 from app.prompts import render
-from app.tokens import estimate_tokens, trim_to_tokens
+from app.tokens import CHARS_PER_TOKEN, estimate_tokens, trim_to_tokens
 from app.vectorstore import RetrievedChunk, VectorStore, read_catalog
 
 HISTORY_TOKENS = 600
@@ -68,7 +68,8 @@ def detect_release(question: str, catalog: dict, product: str | None = None) -> 
         if product and p["product"] != product:
             continue
         for v in p["versions"]:
-            if re.search(rf"(?<![\d.]){re.escape(v['version'])}(?![\d])", question):
+            # An optional v/r prefix ("v8.1", "R8.1") is how engineers commonly write a release.
+            if re.search(rf"(?<![\w.])[vVrR]?{re.escape(v['version'])}(?!\w|\.\w)", question):
                 matches.add((p["product"], v["version"]))
     return matches.pop() if len(matches) == 1 else None
 
@@ -76,15 +77,22 @@ def detect_release(question: str, catalog: dict, product: str | None = None) -> 
 def resolve_release(req: QueryRequest, catalog: dict) -> tuple[str, str, str, bool]:
     detected = False
     product, version = req.product, req.version
+    if req.vendor:
+        catalog = {"products": [p for p in catalog.get("products", []) if p["vendor"] == req.vendor]}
     if not version:
         found = detect_release(req.question, catalog, product)
         if not found:
             raise QueryError("Select the product version — it could not be detected from the question.")
         product, version = found
         detected = True
-    for p in catalog.get("products", []):
-        if (product is None or p["product"] == product) and any(v["version"] == version for v in p["versions"]):
-            return p["vendor"], p["product"], version, detected
+    matches = [p for p in catalog.get("products", [])
+               if (product is None or p["product"] == product)
+               and any(v["version"] == version for v in p["versions"])]
+    if len(matches) > 1:
+        raise QueryError("Select a unique product and vendor for this version.")
+    if matches:
+        p = matches[0]
+        return p["vendor"], p["product"], version, detected
     raise QueryError(f"No documentation is indexed for {product or 'any product'} version {version}.")
 
 
@@ -95,21 +103,23 @@ def label(i: int) -> str:
 
 
 def build_context(chunks: list[RetrievedChunk], max_tokens: int) -> tuple[str, list[RetrievedChunk]]:
-    parts, used, budget = [], [], max_tokens
+    parts, used, budget = [], [], max(0, max_tokens) * CHARS_PER_TOKEN
+    separator = "\n\n---\n\n"
     for i, chunk in enumerate(chunks):
         m = chunk.metadata
         header = f"[{label(i)}] {m['title']} ({m['product']} {m['version']}) — {m['section']} — lines {m['line_start']}-{m['line_end']}"
         block = f"{header}\n{chunk.text}"
-        cost = estimate_tokens(block)
-        if cost > budget:
-            if budget > 150:  # room for a meaningful partial excerpt
-                parts.append(trim_to_tokens(block, budget))
+        available = budget - (len(separator) if parts else 0)
+        cost = len(block)
+        if cost > available:
+            if available > 150 * CHARS_PER_TOKEN:  # room for a meaningful partial excerpt
+                parts.append(trim_to_tokens(block, available // CHARS_PER_TOKEN)[:available])
                 used.append(chunk)
             break
         parts.append(block)
         used.append(chunk)
-        budget -= cost
-    return "\n\n---\n\n".join(parts), used
+        budget = available - cost
+    return separator.join(parts), used
 
 
 def build_history(history: list[dict], max_tokens: int = HISTORY_TOKENS) -> str:

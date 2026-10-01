@@ -50,7 +50,7 @@ sees the wrong release's docs.
 | Version-filtered retrieval (ChromaDB) | ✅ Done |
 | Grounded answers with citations + "not found" fallback | ✅ Done |
 | Web UI (query box, answer view, source panel) | ✅ Done |
-| Tests: 27 offline tests | ✅ All passing |
+| Tests: 84 offline tests | ✅ All passing |
 | Evaluation: 21 golden questions | ✅ 21/21, see below |
 | Deployment (Render, free plan) | ✅ Live at https://noc-copilot.onrender.com |
 | Demo rehearsal | ⏳ **To do** |
@@ -61,7 +61,7 @@ sees the wrong release's docs.
 | --- | --- | --- |
 | Correct source citation | ≥ 90% | **100%** |
 | Scoped to the correct version | ≥ 95% | **100%** |
-| Median response time | < 3 s | **1.29 s** |
+| Median response time | < 3 s | **1.29 s** on 29 Sep; 5.1 s on the 30 Sep re-run (Gemini slower that evening, see EVALUATION.md) |
 
 ---
 

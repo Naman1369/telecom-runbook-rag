@@ -65,6 +65,9 @@ tokens.
 `gemini-3.5-flash` took about 20 s because of default thinking. `gemini-3.5-flash-lite` answered in
 under 1 s with valid structured JSON and passed every evaluation question, so it is the default.
 `GeminiChat` falls back through `CHAT_FALLBACK_MODELS` when a model is overloaded or rate-limited.
+Each request has a `CHAT_TIMEOUT_SECONDS` limit (default 10 s). A model that times out or returns
+504 is skipped straight to the next one instead of being retried. On 30 Sep a request without a
+timeout hung for 75 s, and Gemini latency varied between 1.6 s and 17 s during the evening.
 
 ## Relevance threshold calibration
 

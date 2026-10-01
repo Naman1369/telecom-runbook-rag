@@ -8,6 +8,7 @@
 **Problem.** A telecom operator maintains network configuration guides, troubleshooting runbooks
 and vendor manuals, but support engineers cannot retrieve the precise resolution step during
 outages, prolonging recovery.
+
 **Solution.** A Retrieval-Augmented Generation (RAG) assistant. An engineer picks the equipment
 and **software release**, describes the symptom or alarm, and gets the **exact resolution
 steps and CLI commands for that release**. Every step cites the source document, section and
@@ -134,4 +135,3 @@ work split.
 
 The sample corpus is **synthetic**. "Aurora Networks" and "Helix Radio" are fictional vendors
 invented for this demo; commands and URLs are made up.
-. 

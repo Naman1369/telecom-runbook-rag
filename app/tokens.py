@@ -37,5 +37,13 @@ def estimate_cost(model: str, input_tokens: int, output_tokens: int = 0) -> floa
 
 
 def trim_to_tokens(text: str, max_tokens: int) -> str:
-    max_chars = max_tokens * CHARS_PER_TOKEN
-    return text if len(text) <= max_chars else text[:max_chars].rsplit(" ", 1)[0] + " …"
+    max_chars = max(0, max_tokens) * CHARS_PER_TOKEN
+    if len(text) <= max_chars:
+        return text
+    if not max_chars:
+        return ""
+    suffix = " …"
+    prefix = text[:max_chars - len(suffix)]
+    if " " in prefix:
+        prefix = prefix.rsplit(" ", 1)[0]
+    return prefix + suffix

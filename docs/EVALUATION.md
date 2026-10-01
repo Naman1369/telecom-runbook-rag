@@ -9,7 +9,26 @@ Run with `python scripts/evaluate.py`. It uses 21 golden questions in `eval/gold
 
 Raw results are written to `eval/results/` (git-ignored).
 
-## Latest run — 29 Sep 2026
+## Re-run after merging the final fixes — 30 Sep 2026 (evening)
+
+Same config and golden set, run on the `final-changes` branch (10 merged fix branches + timeout fallback).
+
+| Metric | Target | Result |
+| --- | --- | --- |
+| All checks passed | — | **100%** (21/21) |
+| Correct source citation | ≥ 90% | **100%** (17/17) |
+| Scoped to the correct version | ≥ 95% | **100%** (17/17) |
+| Version-specific command correct | — | **100%** (15/15) |
+| No wrong-release command leaked (incl. traps) | — | **100%** (5/5) |
+| Median latency | < 3 s | **5.06 s** (p90 6.43 s) — target missed |
+
+Accuracy is unchanged. The latency difference comes entirely from Gemini generation time:
+embedding and retrieval took under 10 ms (cached), while generation took 4–10 s per question.
+The deployed site, still on the old code, showed the same behaviour at the same time (1.7 s,
+2.4 s, then a 75 s stall), and the fallback model was just as slow. The 75 s stall is why
+`CHAT_TIMEOUT_SECONDS` was added.
+
+## Earlier run — 29 Sep 2026
 
 Config: `gemini-3.5-flash-lite`, `gemini-embedding-001` (768-d), top-k 5, threshold 0.65, 52 chunks.
 
