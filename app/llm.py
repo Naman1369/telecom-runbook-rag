@@ -9,6 +9,7 @@ import time
 from dataclasses import dataclass
 from typing import Protocol, TypeVar
 
+import httpx
 from pydantic import BaseModel, ValidationError
 
 from app.config import Settings, get_settings
@@ -40,15 +41,22 @@ class ChatModel(Protocol):
 
 class GeminiChat:
     """Primary model with ordered fallbacks: overloaded (503) or rate-limited (429) models are
-    retried briefly, then the next model in ``CHAT_FALLBACK_MODELS`` is tried."""
+    retried briefly, then the next model in ``CHAT_FALLBACK_MODELS`` is tried. A model that does
+    not respond within ``CHAT_TIMEOUT_SECONDS`` (or returns 504, Google's own timeout) is skipped
+    without a retry, because retrying it would make the engineer wait twice."""
 
     def __init__(self, settings: Settings | None = None, max_retries: int = 1):
         from google import genai
+        from google.genai import types
 
         self.settings = settings or get_settings()
         if not self.settings.gemini_api_key:
             raise LLMError("GEMINI_API_KEY is not set — copy .env.example to .env and add your key.")
-        self.client = genai.Client(api_key=self.settings.gemini_api_key)
+        self.timeout_seconds = float(os.getenv("CHAT_TIMEOUT_SECONDS", "10"))
+        self.client = genai.Client(
+            api_key=self.settings.gemini_api_key,
+            http_options=types.HttpOptions(timeout=int(self.timeout_seconds * 1000)),
+        )
         self.model = self.settings.chat_model
         fallbacks = [m.strip() for m in os.getenv("CHAT_FALLBACK_MODELS", "gemini-3.1-flash-lite").split(",")]
         self.models = [self.model] + [m for m in fallbacks if m and m != self.model]
@@ -79,7 +87,7 @@ class GeminiChat:
             try:
                 return self.client.models.generate_content(model=model, contents=prompt, config=config)
             except errors.APIError as exc:
-                if exc.code not in RETRYABLE_STATUS or attempt == self.max_retries:
+                if exc.code not in RETRYABLE_STATUS or exc.code == 504 or attempt == self.max_retries:
                     raise
                 log.warning("%s returned %s — retry %d in %.0fs", model, exc.code, attempt + 1, delay)
                 time.sleep(delay)
@@ -100,7 +108,13 @@ class GeminiChat:
                 if exc.code not in RETRYABLE_STATUS:
                     break
                 log.warning("%s unavailable (%s) — falling back", model, exc.code)
+            except httpx.TransportError as exc:  # timeout or dropped connection
+                last_error = exc
+                log.warning("%s did not respond (%s) — falling back", model, type(exc).__name__)
         if response is None:
+            if isinstance(last_error, httpx.TransportError):
+                raise LLMError(f"Gemini did not respond within {self.timeout_seconds:g} s. "
+                               "Please try again.") from last_error
             raise LLMError(f"Gemini API error {last_error.code}: {last_error.message}") from last_error
 
         meta = response.usage_metadata

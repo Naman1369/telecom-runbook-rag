@@ -18,6 +18,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Protocol
 
+import httpx
+
 from app.config import Settings, get_settings
 from app.tokens import estimate_cost, estimate_tokens
 
@@ -91,10 +93,13 @@ class GeminiEmbedder:
     def __init__(self, settings: Settings, cache: EmbeddingCache | None = None,
                  batch_size: int = 50, max_retries: int = 5):
         from google import genai
+        from google.genai import types
 
         if not settings.gemini_api_key:
             raise RuntimeError("GEMINI_API_KEY is not set — copy .env.example to .env and add your key.")
-        self.client = genai.Client(api_key=settings.gemini_api_key)
+        # Without a timeout a stalled request would block the query (or the ingest run) indefinitely.
+        self.client = genai.Client(api_key=settings.gemini_api_key,
+                                   http_options=types.HttpOptions(timeout=30_000))
         self.model = settings.embed_model
         self.dim = settings.embed_dim
         self.name = f"gemini:{self.model}:{self.dim}"
@@ -113,11 +118,13 @@ class GeminiEmbedder:
                 self.stats.api_calls += 1
                 response = self.client.models.embed_content(model=self.model, contents=texts, config=config)
                 return [l2_normalize(list(e.values)) for e in response.embeddings]
-            except errors.APIError as exc:
-                if exc.code not in RETRYABLE_STATUS or attempt == self.max_retries:
+            except (errors.APIError, httpx.TransportError) as exc:
+                code = getattr(exc, "code", type(exc).__name__)  # transport errors have no status code
+                retryable = isinstance(exc, httpx.TransportError) or code in RETRYABLE_STATUS
+                if not retryable or attempt == self.max_retries:
                     raise
                 self.stats.retries += 1
-                log.warning("Embedding API %s — retry %d in %.0fs", exc.code, attempt + 1, delay)
+                log.warning("Embedding API %s — retry %d in %.0fs", code, attempt + 1, delay)
                 time.sleep(delay)
                 delay = min(delay * 2, 60)
         raise RuntimeError("unreachable")

@@ -68,7 +68,8 @@ def detect_release(question: str, catalog: dict, product: str | None = None) -> 
         if product and p["product"] != product:
             continue
         for v in p["versions"]:
-            if re.search(rf"(?<![\w.]){re.escape(v['version'])}(?!\w|\.\w)", question):
+            # An optional v/r prefix ("v8.1", "R8.1") is how engineers commonly write a release.
+            if re.search(rf"(?<![\w.])[vVrR]?{re.escape(v['version'])}(?!\w|\.\w)", question):
                 matches.add((p["product"], v["version"]))
     return matches.pop() if len(matches) == 1 else None
 
